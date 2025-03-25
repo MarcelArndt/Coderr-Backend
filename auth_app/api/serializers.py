@@ -24,7 +24,7 @@ class RegestrationSerializer(serializers.ModelSerializer):
 
     class Meta():
         model = CustomUser
-        fields = ["username", "password", "repeated_password", "email", "type"]
+        fields = ["username", "email", "type", "password", "repeated_password"]
         extra_kwargs = {
             'password': {'write_only': True},
         }
@@ -33,25 +33,49 @@ class RegestrationSerializer(serializers.ModelSerializer):
         password = data.get("password")
         repeatingPassword = data.get("repeated_password")
         email = data.get("email")
+        username = data.get("username")
 
+        if User.objects.filter(username = username).exists():
+            raise serializers.ValidationError("Username already exists.")
         if not repeatingPassword == password:
-            raise serializers.ValidationError("Passwörter stimmen nicht überein")
- 
+            raise serializers.ValidationError("passwords doesn't match")
         if not email:
-            raise serializers.ValidationError({"email": "Email is required"})
-        
+            raise serializers.ValidationError("Email is required.")
         if User.objects.filter(email = email).exists():
-            raise serializers.ValidationError({"email": "Email already exists"}) 
+            raise serializers.ValidationError("Email already exists.") 
         
         return data
 
     def create(self, validated_data) :
         password = self.validated_data.get('password')
-        email = self.validated_data.get('email')
         type = self.validated_data.get('type')
+        email = self.validated_data.get("email")
         username = self.validated_data.get('username')
-
-        user = User.objects.create_user(username = username, email = 'lea@web.de', password = password)
+        user = User.objects.create_user(username = username, email = email, password = password)
         custom_user = CustomUser.objects.create(user = user, type = type)
- 
         return custom_user
+
+class LoginSerializer(serializers.Serializer):
+        username = serializers.CharField(write_only=True)
+        password = serializers.CharField(write_only=True)
+
+        def validate(self, data):
+            username = data.get("username")
+            password = data.get("password")
+            user = User.objects.filter(username=username).first()
+            if not user:
+                raise serializers.ValidationError("wrong username")
+
+            if not user.check_password(password):
+                 raise serializers.ValidationError("wrong password")
+            
+            try:
+                custom_user = user.above_user
+            except:
+                raise serializers.ValidationError("No User found")
+
+            return {"custom_user" : custom_user}
+
+               
+            
+        

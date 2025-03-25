@@ -8,5 +8,5 @@ BUSINESSTYPE_CHOICES = [
     ]
 
 class CustomUser(models.Model):
-    user = models.ForeignKey(User, verbose_name=("User"), on_delete=models.CASCADE)
+    user = models.OneToOneField(User, verbose_name=("User"), on_delete=models.CASCADE, related_name="above_user")
     type = models.CharField(choices=BUSINESSTYPE_CHOICES, default="customer", max_length=10)
