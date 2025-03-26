@@ -1,18 +1,6 @@
 from rest_framework import serializers
-from auth_app.models import CustomUser, BUSINESSTYPE_CHOICES
+from market_app.models import Profiles, BUSINESSTYPE_CHOICES
 from django.contrib.auth.models import User
-
-
-class UserSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(source="user.email", read_only = True)
-    name = serializers.CharField(source="user.username", read_only = True)
-
-    class Meta():
-        model = CustomUser
-        exclude = []
-        extra_kwargs = {
-            'user': {'required': False}
-        }
 
 
 class RegestrationSerializer(serializers.ModelSerializer):
@@ -23,7 +11,7 @@ class RegestrationSerializer(serializers.ModelSerializer):
     type = serializers.ChoiceField(choices=BUSINESSTYPE_CHOICES, write_only = True)
 
     class Meta():
-        model = CustomUser
+        model = Profiles
         fields = ["username", "email", "type", "password", "repeated_password"]
         extra_kwargs = {
             'password': {'write_only': True},
@@ -52,8 +40,8 @@ class RegestrationSerializer(serializers.ModelSerializer):
         email = self.validated_data.get("email")
         username = self.validated_data.get('username')
         user = User.objects.create_user(username = username, email = email, password = password)
-        custom_user = CustomUser.objects.create(user = user, type = type)
-        return custom_user
+        user_profiles = Profiles.objects.create(user = user, type = type)
+        return user_profiles
 
 class LoginSerializer(serializers.Serializer):
         username = serializers.CharField(write_only=True)
@@ -68,13 +56,12 @@ class LoginSerializer(serializers.Serializer):
 
             if not user.check_password(password):
                  raise serializers.ValidationError("wrong password")
-            
             try:
-                custom_user = user.above_user
+                user_profile = user.inner_user
             except:
                 raise serializers.ValidationError("No User found")
 
-            return {"custom_user" : custom_user}
+            return {"user_profile" : user_profile}
 
                
             

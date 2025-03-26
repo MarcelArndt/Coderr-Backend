@@ -1,16 +1,10 @@
-from auth_app.api.serializers import RegestrationSerializer, UserSerializer, LoginSerializer
-from auth_app.models import CustomUser
-from rest_framework import generics, status
+from auth_app.api.serializers import RegestrationSerializer, LoginSerializer
+from rest_framework import status
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-
-class UserListView(generics.ListAPIView, generics.RetrieveAPIView):
-    queryset = CustomUser.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
 
 class RegestrationView(APIView):
     permission_classes = [AllowAny]
@@ -37,7 +31,7 @@ class LoginView(ObtainAuthToken):
         def post(self, request, *args, **kwargs):
             serializer = LoginSerializer(data=request.data)
             if serializer.is_valid():
-                  auth_user = serializer.validated_data["custom_user"]
+                  auth_user = serializer.validated_data["user_profile"]
                   token, create = Token.objects.get_or_create(user = auth_user.user)
                   data = {
                     "username" : auth_user.user.username,

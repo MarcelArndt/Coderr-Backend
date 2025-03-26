@@ -1,6 +1,6 @@
-from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
+from .views import ProfilesListView
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
+    path("profile/<int:pk>/", ProfilesListView.as_view(), name="user_detail")
 ]
