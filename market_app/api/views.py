@@ -7,6 +7,21 @@ from rest_framework.permissions import IsAdminUser, AllowAny
 from .premissions import IsOwnerOrAdmin
 
 
+
+class ProfilesFilteredListView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, type, *args, **kwargs):
+        if not type in ["business", "customer"]:
+            return Response({"error": "type doesn't match for filtering"}, status=status.HTTP_404_NOT_FOUND)
+        data = Profiles.objects.filter(type=type)
+        if(data):
+            serializer = ProfilesSerializer(data, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Business-User found'}, status=status.HTTP_404_NOT_FOUND)
+        
+
 class ProfilesListView(APIView):
 
     permission_classes = [AllowAny]

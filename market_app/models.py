@@ -14,11 +14,11 @@ def user_directory_path(instance, filename ):
 class Profiles(models.Model):
     user = models.OneToOneField(User, verbose_name=("User"), on_delete=models.CASCADE, related_name="inner_user")
     type = models.CharField(choices=BUSINESSTYPE_CHOICES, default="customer", max_length=10)
-    location = models.CharField(max_length=50)
+    location = models.CharField(max_length=50, blank=True)
     file = models.FileField(upload_to=user_directory_path, max_length=150)
-    tel = models.CharField(max_length=12)
-    description = models.TextField()
-    working_hours = models.CharField(max_length=8)
+    tel = models.CharField(max_length=15, blank=True)
+    description = models.TextField(blank=True)
+    working_hours = models.CharField(max_length=30, blank=True)
 
     def save(self, *args, **kwargs):
         if self.pk:
