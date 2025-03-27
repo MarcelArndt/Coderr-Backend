@@ -1,12 +1,41 @@
-from market_app.api.serializers import ProfilesSerializer
-from market_app.models import Profiles
+from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer
+from market_app.models import Profiles, Offers, OffersDetails
 from rest_framework import generics, status
 from rest_framework.views import APIView 
 from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
 from .premissions import IsOwnerOrAdmin
 
+### Offers ### _________________________________________________________________________
 
+class OffersViewSet(generics.ListCreateAPIView):
+    queryset = Offers.objects.all()
+    serializer_class = OffersSerializer
+    permission_classes = [AllowAny]
+
+class OffersDetailsViewSet(generics.ListCreateAPIView):
+    queryset = OffersDetails.objects.all()
+    serializer_class = OffersDetailSerializer
+    permission_classes = [AllowAny]
+
+
+class OfferView(APIView):
+    permission_classes = [IsOwnerOrAdmin]
+    def post(self, request, *args, **kwargs):
+            data = request.data
+            data["user"] = request.user
+            print(data["user"])
+            serializer =  CreateOffersSerializer(data=data)
+            if serializer.is_valid():
+                saved_offer = serializer.save()
+                data = serializer.data
+            else:
+                data = serializer.errors
+                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+            return Response(data, status=status.HTTP_201_CREATED)
+
+
+### Profiles ### _______________________________________________________________________
 
 class ProfilesFilteredListView(APIView):
     permission_classes = [AllowAny]
