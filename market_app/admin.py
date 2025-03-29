@@ -1,3 +1,9 @@
 from django.contrib import admin
+from .models import Offers, Profiles, OffersDetails, Orders, Reviews
 
-# Register your models here.
+
+admin.site.register(Offers)
+admin.site.register(Profiles)
+admin.site.register(OffersDetails)
+admin.site.register(Orders)
+admin.site.register(Reviews)
