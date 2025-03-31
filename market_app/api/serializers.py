@@ -38,7 +38,7 @@ class CreateOffersSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"details": "Dieses Feld ist erforderlich."})
         details_list = validated_data.pop('details', [])
         if not request or not request.user.is_authenticated:
-            raise serializers.ValidationError("You must be logged in to create an offer.")
+            raise serializers.ValidationError({"User": "You must be logged in to create an offer."})
         else: 
             profile = Profiles.objects.get(user=request.user)
         validated_data['user'] = profile
@@ -75,7 +75,7 @@ class ProfilesSerializer(serializers.ModelSerializer):
 
     class Meta():
         model = Profiles
-        exclude = ["user"]
+        exclude = []
 
 
 ### Reviews ### _______________________________________________________________________
@@ -91,6 +91,17 @@ class ReviewsSerializer(serializers.ModelSerializer):
     class Meta():
         model = Reviews
         exclude = []
+        read_only_fields = ['reviewer']
+
+    def create(self, validated_data):
+        request = self.context['request']
+        if not request or not request.user:
+            raise serializers.ValidationError({'User': "You must be logged in to create a Review."})
+
+        profil = Profiles.objects.get(user=request.user)
+        validated_data['reviewer'] = profil
+        review = Reviews.objects.create(**validated_data)
+        return review
 
 ### Base-info ### _______________________________________________________________________
 

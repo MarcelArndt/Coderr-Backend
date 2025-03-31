@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAdminUser, AllowAny
 from .premissions import IsOwnerOrAdmin
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from market_app.filter import OfferFilter, ReviewFilter
 
 ### Offers ### _________________________________________________________________________
 
@@ -28,6 +31,16 @@ class OffersDetailsViewSet(APIView):
 
 class OfferView(APIView):
     permission_classes = [AllowAny]
+    filterset_class = OfferFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['title', 'description']
+
+    def filter_queryset(self, queryset):
+        filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        if filterset.is_valid():
+            return filterset.qs
+        return queryset
+
     def post(self, request, *args, **kwargs):
             serializer = CreateOffersSerializer(data=request.data, context={"request": request})
             if serializer.is_valid():
@@ -48,12 +61,12 @@ class OfferView(APIView):
                 return Response(serializer.data)
             except Offers.DoesNotExist:
                 return Response({"Error": "Offer not found"}, status=status.HTTP_404_NOT_FOUND)
-        offers = Offers.objects.all()
+        offers = self.filter_queryset(Offers.objects.all())
         serializer = OffersSerializer(offers, many=True)
         return Response(serializer.data)
     
     permission_classes = [IsOwnerOrAdmin]
-    def get(self, request, *args, **kwargs):
+    def delete(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         queryset = get_object_or_404(Offers, pk=pk)
         queryset.delete()
@@ -110,15 +123,32 @@ class ProfilesListView(APIView):
 class ReviewsListView(APIView):
 
     permission_classes = [AllowAny]
+
+    filter_backends = [DjangoFilterBackend]  # Filter-Backend hinzufügen
+    filterset_class = ReviewFilter
+
+    def filter_queryset(self, queryset):
+        filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        if filterset.is_valid():
+            return filterset.qs
+        return queryset
+
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         if pk:
             queryset = Reviews.objects.get(pk=pk)
             serializer = ReviewsSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Reviews.objects.all()
+        queryset = self.filter_queryset(Reviews.objects.all())
         serializer = ReviewsSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request, *args, **kwargs):
+        serializer = ReviewsSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def patch(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
@@ -129,19 +159,17 @@ class ReviewsListView(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    permission_classes = [IsOwnerOrAdmin]
     def delete(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         queryset = get_object_or_404(Reviews, pk=pk)
         queryset.delete()
         return Response({"message": "Review erfolgreich gelöscht"}, status=status.HTTP_204_NO_CONTENT)
-
-
-        
+    
 
 ### Reviews ### _______________________________________________________________________
 class OrdersListView(APIView):
     permission_classes = [AllowAny]
+
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         if pk:
