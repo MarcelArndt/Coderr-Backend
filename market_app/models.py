@@ -49,7 +49,7 @@ class Profiles(models.Model):
 
 def user_offer_directory_path(instance, filename ):
     new_filename = "offer" + os.path.splitext(filename)[1]
-    return os.path.join('uploads', instance.user.username, 'offers', new_filename)
+    return os.path.join('uploads', instance.user.user.username, new_filename)
 
 class Offers(models.Model):
     user = models.ForeignKey(Profiles, on_delete=models.CASCADE)

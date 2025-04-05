@@ -32,7 +32,6 @@ class OffersDetailsViewSet(APIView):
 class OfferView(APIView):
     permission_classes = [AllowAny]
     filterset_class = OfferFilter
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     search_fields = ['title', 'description']
 
     def filter_queryset(self, queryset):
@@ -44,12 +43,20 @@ class OfferView(APIView):
     def post(self, request, *args, **kwargs):
             serializer = CreateOffersSerializer(data=request.data, context={"request": request})
             if serializer.is_valid():
-                saved_offer = serializer.save()
-                data = serializer.data
+                serializer.save()
             else:
-                data = serializer.errors
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
-            return Response(data, status=status.HTTP_201_CREATED)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    
+    def patch(self, request, *args, **kwargs):
+        pk = kwargs.get("pk")
+        queryset = get_object_or_404(Offers, pk=pk)
+        serializer = OffersSerializer(queryset, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
@@ -63,7 +70,11 @@ class OfferView(APIView):
                 return Response({"Error": "Offer not found"}, status=status.HTTP_404_NOT_FOUND)
         offers = self.filter_queryset(Offers.objects.all())
         serializer = OffersSerializer(offers, many=True)
-        return Response(serializer.data)
+        data = {
+            'count': offers.count(),
+            'results' : serializer.data
+        }
+        return Response(data)
     
     permission_classes = [IsOwnerOrAdmin]
     def delete(self, request, *args, **kwargs):
@@ -123,8 +134,6 @@ class ProfilesListView(APIView):
 class ReviewsListView(APIView):
 
     permission_classes = [AllowAny]
-
-    filter_backends = [DjangoFilterBackend]  # Filter-Backend hinzufügen
     filterset_class = ReviewFilter
 
     def filter_queryset(self, queryset):

@@ -13,14 +13,22 @@ class OffersDetailSerializer(serializers.ModelSerializer):
 
 
 class OffersSerializer(serializers.ModelSerializer):
-    details = OffersDetailSerializer(many=True, read_only=True)
+    details = OffersDetailSerializer(many=True)
     username = serializers.CharField(source='user.user.username', read_only=True)
     class Meta:
         model = Offers
         exclude = []
-        extra_kwargs = {
-            'user': {'read_only': True}
-        }
+
+    def update(self, instance, validated_data):
+        new_details = validated_data.pop('details', None)
+        if new_details:
+            instance.details.all().delete()
+            for details_data in new_details:
+                 instance.details.create(**details_data)
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+        instance.save()
+        return instance
 
 
 class CreateOffersSerializer(serializers.ModelSerializer):
@@ -32,10 +40,9 @@ class CreateOffersSerializer(serializers.ModelSerializer):
         read_only_fields = ['user']
 
     def create(self, validated_data): 
-         
         request = self.context.get('request')
         if "details" not in validated_data:
-            raise serializers.ValidationError({"details": "Dieses Feld ist erforderlich."})
+            raise serializers.ValidationError({"details": "details are empty and required."})
         details_list = validated_data.pop('details', [])
         if not request or not request.user.is_authenticated:
             raise serializers.ValidationError({"User": "You must be logged in to create an offer."})
@@ -48,6 +55,7 @@ class CreateOffersSerializer(serializers.ModelSerializer):
             OffersDetails.objects.create(**each_detail)
 
         return new_offer
+
  
 
 ### Profiles ### _______________________________________________________________________
