@@ -1,4 +1,4 @@
-from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer
+from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer, ProfilesTypeSerializer
 from market_app.models import Profiles, Offers, OffersDetails, Reviews, Orders
 from rest_framework import generics, status
 from rest_framework.views import APIView 
@@ -92,14 +92,13 @@ class ProfilesFilteredListView(APIView):
             return Response({"error": "type doesn't match for filtering"}, status=status.HTTP_404_NOT_FOUND)
         data = Profiles.objects.filter(type=type)
         if(data):
-            serializer = ProfilesSerializer(data, many=True)
+            serializer = ProfilesTypeSerializer(data, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Business-User found'}, status=status.HTTP_404_NOT_FOUND)
         
 
 class ProfilesListView(APIView):
-
     permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')

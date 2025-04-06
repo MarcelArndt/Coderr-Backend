@@ -86,6 +86,21 @@ class ProfilesSerializer(serializers.ModelSerializer):
         exclude = []
 
 
+class UserSerializer(serializers.ModelSerializer):
+    pk = serializers.IntegerField(source="id")
+
+    class Meta:
+        model = User
+        fields = ["pk", "username", "first_name", "last_name"]
+
+class ProfilesTypeSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+
+    class Meta():
+        model = Profiles
+        exclude = []
+
+
 ### Reviews ### _______________________________________________________________________
 
 class OrdersSerializer(serializers.ModelSerializer):
