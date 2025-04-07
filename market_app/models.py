@@ -58,7 +58,7 @@ class Offers(models.Model):
     description = models.TextField(blank=False)
     created_at = models.DateField(auto_now=False, auto_now_add=True)
     updated_at = models.DateField(auto_now=True, auto_now_add=False)
-    min_price =  models.CharField(max_length=120, blank=True, null=True)
+    min_price =  models.DecimalField(max_digits=8, decimal_places=2, blank=False, default=0)
     min_delivery_time = models.PositiveSmallIntegerField(blank=True, null=True)
  
 class OffersDetails(models.Model):
@@ -66,7 +66,7 @@ class OffersDetails(models.Model):
     title = models.CharField(max_length=100, blank=False)
     revisions = models.IntegerField(blank=False)
     delivery_time_in_days = models.PositiveSmallIntegerField(blank=False)
-    price = models.DecimalField(max_digits=6, decimal_places=2, blank=False)
+    price = models.DecimalField(max_digits=8, decimal_places=2, blank=False)
     offer_type = models.CharField(max_length=30, blank=False)
     features = models.JSONField(blank=False, null=False)
 

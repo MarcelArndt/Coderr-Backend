@@ -9,6 +9,8 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 from market_app.filter import OfferFilter, ReviewFilter
+from rest_framework.filters import SearchFilter
+from django.db.models import Q
 
 ### Offers ### _________________________________________________________________________
 
@@ -37,7 +39,14 @@ class OfferView(APIView):
     def filter_queryset(self, queryset):
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
         if filterset.is_valid():
-            return filterset.qs
+            queryset = filterset.qs
+
+        search_query = self.request.GET.get('search')
+        if search_query:
+            queryset = queryset.filter(
+                Q(title__icontains=search_query) |
+                Q(description__icontains=search_query)
+            )
         return queryset
 
     def post(self, request, *args, **kwargs):
