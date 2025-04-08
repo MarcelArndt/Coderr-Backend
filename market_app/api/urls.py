@@ -11,5 +11,6 @@ urlpatterns = [
     path("reviews/<int:pk>/", ReviewsListView.as_view(), name="reviews_detail"),
     path("orders/", OrdersListView.as_view(), name="orders_list"),
     path("orders/<int:pk>/", OrdersListView.as_view(), name="orders_detail"),
-    path("base-info/", BaseInfoView.as_view(), name="base-info")
+    path("base-info/", BaseInfoView.as_view(), name="base-info"),
+    path("order-count/<int:pk>", BaseInfoView.as_view(), name="order-count"),
 ]

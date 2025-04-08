@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from market_app.models import Profiles, Offers, OffersDetails, Orders, Reviews
+from django.db.models import Avg
 
 
 
@@ -144,7 +145,7 @@ class OrdersSerializer(serializers.ModelSerializer):
     class Meta():
         model = Orders
         exclude = []
-
+        
 ### Reviews ### _______________________________________________________________________
 
 class ReviewsSerializer(serializers.ModelSerializer):
@@ -165,7 +166,34 @@ class ReviewsSerializer(serializers.ModelSerializer):
 
 ### Base-info ### _______________________________________________________________________
 
-class BaseInfoSerializer(serializers.ModelSerializer):
-    class Meta():
-        model = Reviews
-        exclude = []
+
+class OrderCountSerializer(serializers.Serializer):
+    class OrderCountSerializer(serializers.Serializer):
+        order_count = serializers.IntegerField()
+
+    def to_representation(self, instance):
+        pk = self.context.get('pk')
+        order_count = Orders.objects.filter(user_id=pk, status='in_progress').count()
+        return {'order_count': order_count}
+
+
+class BaseInfoSerializer(serializers.Serializer):
+    review_count = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    business_profile_count = serializers.SerializerMethodField()
+    offer_count = serializers.SerializerMethodField()
+
+    def get_review_count(self, obj):
+        return Reviews.objects.count()
+    
+    def get_offer_count(self, obj):
+        return Offers.objects.count()
+
+    def get_business_profile_count(self, obj):
+        return Profiles.objects.filter(type='business').count()
+    
+    def get_average_rating(self, obj):
+        average = Reviews.objects.aggregate(avg_rating=Avg('rating'))['avg_rating']
+        return round(average, 1) if average is not None else 0.0
+
+    

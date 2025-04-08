@@ -1,4 +1,4 @@
-from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer, ProfilesTypeSerializer
+from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer, ProfilesTypeSerializer, BaseInfoSerializer, OrderCountSerializer
 from market_app.models import Profiles, Offers, OffersDetails, Reviews, Orders
 from rest_framework import generics, status
 from rest_framework.views import APIView 
@@ -218,11 +218,18 @@ class OrdersListView(APIView):
         queryset = get_object_or_404(Orders, pk=pk)
         queryset.delete()
         return Response({"message": "Order erfolgreich gelöscht"}, status=status.HTTP_204_NO_CONTENT)
-    
 
+### order-count ### _______________________________________________________________________
+class OrderCountView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        serializer = OrderCountSerializer({}, context={"pk": pk})
+        return Response(serializer.data)
 
 ### Base-info ### _______________________________________________________________________
-
 class BaseInfoView(APIView):
-   def get(self, request, *args, **kwargs):
-       pass
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        serializer = BaseInfoSerializer({})
+        return Response(serializer.data)

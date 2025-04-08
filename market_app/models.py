@@ -76,6 +76,7 @@ class OffersDetails(models.Model):
 ### Orders ### _______________________________________________________________________
 
 class Orders(models.Model):
+    user = models.ForeignKey(Profiles, on_delete=models.CASCADE)
     title = models.CharField(max_length=50)
     revisions = models.IntegerField()
     delivery_time_in_days = models.PositiveSmallIntegerField()
@@ -94,11 +95,3 @@ class Reviews(models.Model):
     description = models.TextField()
     created_at = models.DateField(auto_now=False, auto_now_add=True)
     updated_at = models.DateField(auto_now=True, auto_now_add=False)
-
-
-### BaseInfo ### _______________________________________________________________________
-class BaseInfo(models.Model):
-    review_count = models.IntegerField()
-    average_rating = models.DecimalField(max_digits=2, decimal_places=1)
-    business_profile_count = models.IntegerField()
-    offer_count = models.IntegerField()
