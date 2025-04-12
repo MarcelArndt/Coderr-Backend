@@ -8,9 +8,10 @@ from .premissions import IsOwnerOrAdmin
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-from market_app.filter import OfferFilter, ReviewFilter
+from market_app.filter import OfferFilter, ReviewFilter, OffersDetailsPaginationFilter
 from rest_framework.filters import SearchFilter
 from django.db.models import Q
+from rest_framework.pagination import PageNumberPagination
 
 ### Offers ### _________________________________________________________________________
 
@@ -35,6 +36,7 @@ class OfferView(APIView):
     permission_classes = [AllowAny]
     filterset_class = OfferFilter
     search_fields = ['title', 'description']
+    paginator = OffersDetailsPaginationFilter()
 
     def filter_queryset(self, queryset):
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
@@ -47,7 +49,7 @@ class OfferView(APIView):
                 Q(title__icontains=search_query) |
                 Q(description__icontains=search_query)
             )
-        return queryset
+        return  queryset
 
     def post(self, request, *args, **kwargs):
             serializer = CreateOffersSerializer(data=request.data, context={"request": request})
@@ -78,7 +80,9 @@ class OfferView(APIView):
             except Offers.DoesNotExist:
                 return Response({"Error": "Offer not found"}, status=status.HTTP_404_NOT_FOUND)
         offers = self.filter_queryset(Offers.objects.all())
-        serializer = OffersSerializer(offers, many=True)
+
+        result_page = self.paginator.paginate_queryset(offers, request)
+        serializer = OffersSerializer(result_page, many=True)
         data = {
             'count': offers.count(),
             'results' : serializer.data

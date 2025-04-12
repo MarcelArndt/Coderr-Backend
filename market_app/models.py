@@ -88,6 +88,7 @@ class Orders(models.Model):
     updated_at = models.DateField(auto_now=True, auto_now_add=False)
 
 ### Reviews ### _______________________________________________________________________
+
 class Reviews(models.Model):
     business_user = models.ForeignKey(Profiles, on_delete=models.CASCADE, related_name="business_user")
     reviewer = models.ForeignKey(Profiles, on_delete=models.CASCADE, related_name="reviewer")

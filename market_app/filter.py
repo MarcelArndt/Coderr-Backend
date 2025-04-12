@@ -1,5 +1,6 @@
 import django_filters
 from .models import Offers, Reviews
+from rest_framework.pagination import PageNumberPagination
 
 class OfferFilter(django_filters.FilterSet):
     min_price = django_filters.NumberFilter(field_name="min_price", lookup_expr='gte')
@@ -20,3 +21,9 @@ class ReviewFilter(django_filters.FilterSet):
     class Meta:
         model = Reviews
         fields = ['reviewer_id', 'business_user_id', 'ordering']
+
+
+class OffersDetailsPaginationFilter(PageNumberPagination):
+    page_size = 6 
+    page_size_query_param = 'page_size' 
+    max_page_size = 10  
