@@ -187,7 +187,7 @@ class ReviewsListView(APIView):
         return Response({"message": "Review erfolgreich gelöscht"}, status=status.HTTP_204_NO_CONTENT)
     
 
-### Reviews ### _______________________________________________________________________
+### Orders ### _______________________________________________________________________
 class OrdersListView(APIView):
     permission_classes = [AllowAny]
 
@@ -202,9 +202,10 @@ class OrdersListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request, *args, **kwargs):
-        serializer = OrdersSerializer(data= request.data)
+        serializer = OrdersSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
+            print(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     

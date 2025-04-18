@@ -43,7 +43,6 @@ review7 = Reviews.objects.create(rating = 5, reviewer=profil5, business_user=pro
 review8 = Reviews.objects.create(rating = 1.5, reviewer=profil3, business_user=profil6, description="Leistung stimmte überhaupt nicht! Ich möchte mein Geld zurück")
 review9 = Reviews.objects.create(rating = 4, reviewer=profil1, business_user=profil6, description="Cooles Ergenis zum passenden Preis. Weiter so!")
 
-
 #___________________________________________ Offers ___________________________________________
 
 

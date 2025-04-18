@@ -12,7 +12,6 @@ class OffersDetailSerializer(serializers.ModelSerializer):
         model = OffersDetails
         exclude = ['offer']
 
-
 class OffersSerializer(serializers.ModelSerializer):
     details = OffersDetailSerializer(many=True)
     username = serializers.CharField(source='user.user.username', read_only=True)
@@ -139,12 +138,42 @@ class ProfilesTypeSerializer(serializers.ModelSerializer):
         exclude = []
 
 
-### Reviews ### _______________________________________________________________________
+### Orders ### _______________________________________________________________________
 
 class OrdersSerializer(serializers.ModelSerializer):
+    offersDetails = OffersDetailSerializer(read_only=True)
+    offer_detail_id = serializers.IntegerField(write_only=True)
+
     class Meta():
         model = Orders
         exclude = []
+        read_only_fields = ['user', 'offersDetails', 'status']
+
+    def create(self, validated_data):
+        request = self.context['request']
+        user = request.user
+        profil = Profiles.objects.get(user=user)
+        offer_detail_id = request.data.get("offer_detail_id")
+        if not user or not user.is_authenticated:
+            raise serializers.ValidationError({"User":"You have to sign in to make an order."})
+        if not offer_detail_id:
+            raise serializers.ValidationError({"OrderDetail": "Id of your Order can't be found."})
+        order_detail = OffersDetails.objects.get(pk=offer_detail_id)
+        new_order = Orders.objects.create(user=profil, offersDetails=order_detail, status="in_progress")
+        return new_order
+    
+    def to_representation(self, instance):
+        instance_view = super().to_representation(instance)
+        user = instance_view.pop('user')
+        business_user_id = instance.offersDetails.offer.user.id
+        customer_view= {
+            'customer_user': user,
+            'business_use' : business_user_id
+        }
+        offers_view = instance_view.pop('offersDetails', {})
+        offers_view.pop('id', {})
+        return {**instance_view, **offers_view, **customer_view}
+
         
 ### Reviews ### _______________________________________________________________________
 

@@ -71,18 +71,13 @@ class OffersDetails(models.Model):
     features = models.JSONField(blank=False, null=False)
 
     def __str__(self):
-        return f"{self.title} | {self.created_at} | {self.user.username}"
+        return f"{self.title} | {self.offer.created_at} | {self.offer.user.user.username}"
 
 ### Orders ### _______________________________________________________________________
 
 class Orders(models.Model):
     user = models.ForeignKey(Profiles, on_delete=models.CASCADE)
-    title = models.CharField(max_length=50)
-    revisions = models.IntegerField()
-    delivery_time_in_days = models.PositiveSmallIntegerField()
-    price = models.DecimalField(max_digits=6, decimal_places=2)
-    features = models.JSONField()
-    offer_type = models.CharField(max_length=30)
+    offersDetails = models.ForeignKey(OffersDetails, on_delete=models.CASCADE ,related_name="offersDetails", default=None)
     status = models.CharField(choices=PROGRESS_STATUS_CHOICES, max_length=30)
     created_at = models.DateField(auto_now=False, auto_now_add=True)
     updated_at = models.DateField(auto_now=True, auto_now_add=False)
