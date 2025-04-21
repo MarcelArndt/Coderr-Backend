@@ -14,6 +14,43 @@ Zuerst solltest du das Projekt von GitHub klonen:
 ```
 git clone https://github.com/MarcelArndt/Coderr-Backend
 ```
+
+### Manuelle Installation mit Python
+
+### 2. Virtuelle Umgebung erstellen.
+Erstelle eine virtuelle Umgebung für das Projekt und aktiviere diese
+```
+python -m venv env
+```
+
+```
+env\Scripts\activate
+```
+
+### 2. Requirements installieren.
+Als Nächstes müssen alle Requirements und Abhängigkeiten installiert werden.
+```
+pip install -r requirements.txt
+```
+
+### 3. Anlegen von Migrationen und der Datenbank
+für das Anlegen der Datenbank sowie damit verbundene Testdaten muss die utils.py ausgeführt werden.
+```
+python utils.py
+```
+
+### 4. Server starten
+Nun sollte der Server starten können. Wichtig ist, dass ihr beim nächsten Mal starten wieder in die virtuelle Umgebung geht, bevor ihr den Server starten versucht.
+```
+python manage.py runserver
+```
+
+### 5. Nutzung
+Sobald der Server läuft, kannst du das Frontend verwenden und Coderr in seiner vollen Funktionalität genießen.
+Damit ist alles vollständig! Wenn noch etwas fehlt oder angepasst werden soll, lass es mich wissen.
+
+### Installation mit Bat-Datei
+
 ### 2. Installation und Datenbank einrichten
 Führe die beiliegende install.bat-Datei aus, um alle benötigten Abhängigkeiten zu installieren, die Datenbank zu füllen und einen Gast-Account zu erstellen:
 Das Fenster kann geschlossen werden, sobalt die passende Meldung dazu in der Konsole erscheint.
