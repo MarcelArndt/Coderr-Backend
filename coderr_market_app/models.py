@@ -1,5 +1,4 @@
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
 import os
 
@@ -18,8 +17,7 @@ PROGRESS_STATUS_CHOICES = [
     ]
 
 def user_directory_path(instance, filename ):
-    new_filename = "profil_picture" + os.path.splitext(filename)[1]
-    return os.path.join('uploads', instance.user.username, new_filename)
+        return "uploads/user/" + filename
 
 class Profiles(models.Model):
     user = models.OneToOneField(User, verbose_name=("User"), on_delete=models.CASCADE, related_name="inner_user")
@@ -48,8 +46,7 @@ class Profiles(models.Model):
 ### Offers ### _______________________________________________________________________
 
 def user_offer_directory_path(instance, filename ):
-    new_filename = "offer" + os.path.splitext(filename)[1]
-    return os.path.join('uploads', instance.user.user.username, new_filename)
+    return "uploads/offer/" + filename
 
 class Offers(models.Model):
     user = models.ForeignKey(Profiles, on_delete=models.CASCADE)
