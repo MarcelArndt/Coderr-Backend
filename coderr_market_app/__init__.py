@@ -1,1 +1,0 @@
-default_app_config = "coderr_market_app.apps.CoderrMarketAppConfig"
