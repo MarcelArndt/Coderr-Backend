@@ -15,22 +15,24 @@ from market_app.models import Profiles, Reviews, Offers, OffersDetails
 
 
 def reset_migrations():
-    """Clean up migrations and create new ones"""
-    
-    # Delete old migrations
+
+    db_path = 'db.sqlite3' 
+    if os.path.exists(db_path):
+        try:
+            os.remove(db_path)
+        except:
+            print("Could not delete database")
+
     apps = ['market_app', 'auth_app']
     for app in apps:
-        # Make sure migrations directory exists and has __init__.py
         migrations_dir = f'{app}/migrations'
         os.makedirs(migrations_dir, exist_ok=True)
         
-        # Create __init__.py if it doesn't exist
         init_path = os.path.join(migrations_dir, '__init__.py')
         if not os.path.exists(init_path):
             with open(init_path, 'w') as f:
                 pass  # Create empty file
         
-        # Delete migration files
         migration_files = glob.glob(os.path.join(migrations_dir, '0*.py'))
         for file in migration_files:
             try:
@@ -39,17 +41,14 @@ def reset_migrations():
             except Exception as e:
                 print(f"Error deleting {file}: {e}")
     
-    # Create new migrations
     for app in apps:
         try:
-            # Create empty initial migration
             subprocess.run(
                 [sys.executable, 'manage.py', 'makemigrations', app, '--empty', '--name', 'initial'],
                 check=True
             )
             print(f"Created initial migration for {app}")
             
-            # Create migrations for models
             subprocess.run(
                 [sys.executable, 'manage.py', 'makemigrations', app],
                 check=True
@@ -58,12 +57,13 @@ def reset_migrations():
         except subprocess.CalledProcessError as e:
             print(f"Error creating migrations for {app}: {e}")
     
-    # Apply migrations
     try:
         subprocess.run([sys.executable, 'manage.py', 'migrate'], check=True)
         print("Applied all migrations")
     except subprocess.CalledProcessError as e:
         print(f"Error applying migrations: {e}")
+
+reset_migrations()
 
 #___________________________________________ User ___________________________________________
 
