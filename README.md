@@ -27,25 +27,42 @@ python -m venv env
 env\Scripts\activate
 ```
 
-### 2. Requirements installieren.
+### 3. Requirements installieren.
 Als Nächstes müssen alle Requirements und Abhängigkeiten installiert werden.
 ```
 pip install -r requirements.txt
 ```
 
-### 3. Anlegen von Migrationen und der Datenbank
-für das Anlegen der Datenbank sowie damit verbundene Testdaten muss die utils.py ausgeführt werden.
+### 4. Anlegen von Migrationen
+Um die migrationen auzuführen, die für die Erstellung der Datenbank benötigt werden
+
+```
+Coderr spaltet sich in zwei dafür nötige Apps auf
+    1. auth-app für die Authentication und regestrieren der Benutzer/User
+    2. Der eigentlichen market-app, wo sich die logic für den generellen Marktplatz von Coderr zu finden ist.
+```
+
+```
+python manage.py makemigrations
+```
+
+```
+python manage.py migrate
+```
+
+### 4. Anlegen von Testdaten
+Falls man möchte, kann man optional für einpflegen von Testdaten die utils.py ausführen
 ```
 python utils.py
 ```
 
-### 4. Server starten
+### 5. Server starten
 Nun sollte der Server starten können. Wichtig ist, dass ihr beim nächsten Mal starten wieder in die virtuelle Umgebung geht, bevor ihr den Server starten versucht.
 ```
 python manage.py runserver
 ```
 
-### 5. Nutzung
+### 6. Nutzung
 Sobald der Server läuft, kannst du das Frontend verwenden und Coderr in seiner vollen Funktionalität genießen.
 Damit ist alles vollständig! Wenn noch etwas fehlt oder angepasst werden soll, lass es mich wissen.
 
