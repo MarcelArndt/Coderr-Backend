@@ -39,11 +39,7 @@ Um die migrationen auzuführen, die für die Erstellung der Datenbank benötigt 
 ```
 Coderr spaltet sich in zwei dafür nötige Apps auf
     1. auth-app für die Authentication und regestrieren der Benutzer/User
-    2. Der eigentlichen market-app, wo sich die logic für den generellen Marktplatz von Coderr zu finden ist.
-```
-
-```
-python manage.py makemigrations
+    2. Der eigentlichen market-app, wo sich die Logic für den generellen Marktplatz von Coderr zu finden ist.
 ```
 
 ```
