@@ -7,7 +7,7 @@ django.setup()
 
 from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
-from market_app.models import Profiles, Reviews, Offers, OffersDetails
+from coderr_market_app.models import Profiles, Reviews, Offers, OffersDetails
 
 #___________________________________________ User ___________________________________________
 
