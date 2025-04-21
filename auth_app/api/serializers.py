@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from market_app.models import Profiles, BUSINESSTYPE_CHOICES
+from coderr_market_app.models import Profiles, BUSINESSTYPE_CHOICES
 from django.contrib.auth.models import User
 
 
