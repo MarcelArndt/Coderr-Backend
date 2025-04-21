@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',
     'auth_app',
-    #'coderr_market_app'
+    'coderr_market_app'
 ]
 
 MIDDLEWARE = [
