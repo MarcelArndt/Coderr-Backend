@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from market_app.models import Profiles, Offers, OffersDetails, Orders, Reviews
+from coderr_market_app.models import Profiles, Offers, OffersDetails, Orders, Reviews
 from django.db.models import Avg
 
 

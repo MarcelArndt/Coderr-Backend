@@ -1,5 +1,5 @@
-from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer, ProfilesTypeSerializer, BaseInfoSerializer, OrderCountSerializer, completedOrderCountSerializer
-from market_app.models import Profiles, Offers, OffersDetails, Reviews, Orders
+from coderr_market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer, ProfilesTypeSerializer, BaseInfoSerializer, OrderCountSerializer, completedOrderCountSerializer
+from coderr_market_app.models import Profiles, Offers, OffersDetails, Reviews, Orders
 from rest_framework import generics, status
 from rest_framework.views import APIView 
 from rest_framework.response import Response
@@ -8,7 +8,7 @@ from .premissions import IsOwnerOrAdmin
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
-from market_app.filter import OfferFilter, ReviewFilter, OffersDetailsPaginationFilter
+from coderr_market_app.filter import OfferFilter, ReviewFilter, OffersDetailsPaginationFilter
 from rest_framework.filters import SearchFilter
 from django.db.models import Q
 from rest_framework.pagination import PageNumberPagination
