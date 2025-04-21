@@ -1,4 +1,4 @@
-from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer, ProfilesTypeSerializer, BaseInfoSerializer, OrderCountSerializer
+from market_app.api.serializers import ProfilesSerializer, OffersSerializer, OffersDetailSerializer, CreateOffersSerializer, ReviewsSerializer, OrdersSerializer, ProfilesTypeSerializer, BaseInfoSerializer, OrderCountSerializer, completedOrderCountSerializer
 from market_app.models import Profiles, Offers, OffersDetails, Reviews, Orders
 from rest_framework import generics, status
 from rest_framework.views import APIView 
@@ -189,18 +189,26 @@ class ReviewsListView(APIView):
 
 ### Orders ### _______________________________________________________________________
 class OrdersListView(APIView):
-    permission_classes = [AllowAny]
 
+    permission_classes = [IsOwnerOrAdmin]
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         if pk:
             queryset = get_object_or_404(Orders, pk=pk)
             serializer = OrdersSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        queryset = Orders.objects.all()
+        print(request.user.is_authenticated)
+        if request.user.is_authenticated:
+            profil = Profiles.objects.get(user=request.user)
+            queryset = Orders.objects.filter(
+                Q(offersDetails__offer__user=profil) | Q(user=profil)
+            )
+        else:
+            return Response({"error": "No User found! You have to sign-in before."}, status=status.HTTP_401_UNAUTHORIZED)
         serializer = OrdersSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
+    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         serializer = OrdersSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
@@ -209,10 +217,11 @@ class OrdersListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    permission_classes = [AllowAny]
     def patch(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         queryset = get_object_or_404(Orders, pk=pk)
-        serializer = OrdersSerializer(queryset, data= request.data, partial=True)
+        serializer = OrdersSerializer(queryset, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -230,6 +239,13 @@ class OrderCountView(APIView):
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
         serializer = OrderCountSerializer({}, context={"pk": pk})
+        return Response(serializer.data)
+
+class CompletedOrderCountView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        serializer = completedOrderCountSerializer({}, context={"pk": pk})
         return Response(serializer.data)
 
 ### Base-info ### _______________________________________________________________________

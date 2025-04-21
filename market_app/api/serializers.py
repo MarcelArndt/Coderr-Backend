@@ -162,13 +162,20 @@ class OrdersSerializer(serializers.ModelSerializer):
         new_order = Orders.objects.create(user=profil, offersDetails=order_detail, status="in_progress")
         return new_order
     
+    def update(self, instance, validated_data):
+        request = self.context['request']
+        status = request.data.get('status')
+        instance.status = status
+        instance.save()
+        return instance
+    
     def to_representation(self, instance):
         instance_view = super().to_representation(instance)
         user = instance_view.pop('user')
         business_user_id = instance.offersDetails.offer.user.id
         customer_view= {
             'customer_user': user,
-            'business_use' : business_user_id
+            'business_user' : business_user_id
         }
         offers_view = instance_view.pop('offersDetails', {})
         offers_view.pop('id', {})
@@ -186,7 +193,7 @@ class ReviewsSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         request = self.context['request']
         if not request or not request.user:
-            raise serializers.ValidationError({'User': "You must be logged in to create a Review."})
+            raise serializers.ValidationError({'error': "You must be logged in to create a Review."})
 
         profil = Profiles.objects.get(user=request.user)
         validated_data['reviewer'] = profil
@@ -202,8 +209,23 @@ class OrderCountSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         pk = self.context.get('pk')
-        order_count = Orders.objects.filter(user_id=pk, status='in_progress').count()
+        profil = Profiles.objects.get(user=pk)
+        if profil.type != 'business' or not profil:
+             raise serializers.ValidationError({'error': 'Business user not found.'})
+        order_count = Orders.objects.filter(offersDetails__offer__user=profil, status='in_progress').count()
         return {'order_count': order_count}
+    
+class completedOrderCountSerializer(serializers.Serializer):
+    class OrderCountSerializer(serializers.Serializer):
+        completed_order_count = serializers.IntegerField()
+
+    def to_representation(self, instance):
+        pk = self.context.get('pk')
+        profil = Profiles.objects.get(user=pk)
+        if profil.type != 'business' or not profil:
+             raise serializers.ValidationError({'error': 'Business user not found.'})
+        completed_order_count = Orders.objects.filter(offersDetails__offer__user=profil, status='completed').count()
+        return {'completed_order_count': completed_order_count}
 
 
 class BaseInfoSerializer(serializers.Serializer):
