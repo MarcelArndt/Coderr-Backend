@@ -42,9 +42,7 @@ class LoginView(ObtainAuthToken):
                   
                   return Response(data, status=status.HTTP_200_OK)
             else:
-                data = {
-                     "wrong username or password."
-                }
-                return Response(data, status=status.HTTP_400_BAD_REQUEST)
+                 data = serializer.errors
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
             
 

@@ -15,6 +15,8 @@ class OffersDetailSerializer(serializers.ModelSerializer):
 class OffersSerializer(serializers.ModelSerializer):
     details = OffersDetailSerializer(many=True)
     username = serializers.CharField(source='user.user.username', read_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
     class Meta:
         model = Offers
         fields = '__all__'
@@ -91,10 +93,6 @@ class CreateOffersSerializer(serializers.ModelSerializer):
         representation['min_delivery_time'] = instance.min_delivery_time
         return representation
 
-
-
-    
-
 ### Profiles ### _______________________________________________________________________
 
 class ProfilesSerializer(serializers.ModelSerializer):
@@ -143,6 +141,8 @@ class ProfilesTypeSerializer(serializers.ModelSerializer):
 class OrdersSerializer(serializers.ModelSerializer):
     offersDetails = OffersDetailSerializer(read_only=True)
     offer_detail_id = serializers.IntegerField(write_only=True)
+    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
 
     class Meta():
         model = Orders
@@ -185,6 +185,10 @@ class OrdersSerializer(serializers.ModelSerializer):
 ### Reviews ### _______________________________________________________________________
 
 class ReviewsSerializer(serializers.ModelSerializer):
+
+    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+
     class Meta():
         model = Reviews
         exclude = []
@@ -201,7 +205,6 @@ class ReviewsSerializer(serializers.ModelSerializer):
         return review
 
 ### Base-info ### _______________________________________________________________________
-
 
 class OrderCountSerializer(serializers.Serializer):
     class OrderCountSerializer(serializers.Serializer):

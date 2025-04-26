@@ -42,8 +42,8 @@ class Offers(models.Model):
     title = models.CharField(max_length=120, blank=False)
     image = models.FileField(upload_to=user_offer_directory_path, max_length=100, blank=True, null=True)
     description = models.TextField(blank=False)
-    created_at = models.DateField(auto_now=False, auto_now_add=True)
-    updated_at = models.DateField(auto_now=True, auto_now_add=False)
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)
     min_price =  models.DecimalField(max_digits=8, decimal_places=2, blank=False, default=0)
     min_delivery_time = models.PositiveSmallIntegerField(blank=True, null=True)
  
@@ -65,8 +65,8 @@ class Orders(models.Model):
     user = models.ForeignKey(Profiles, on_delete=models.CASCADE)
     offersDetails = models.ForeignKey(OffersDetails, on_delete=models.CASCADE ,related_name="offersDetails", default=None)
     status = models.CharField(choices=PROGRESS_STATUS_CHOICES, max_length=30)
-    created_at = models.DateField(auto_now=False, auto_now_add=True)
-    updated_at = models.DateField(auto_now=True, auto_now_add=False)
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)
 
 ### Reviews ### _______________________________________________________________________
 
@@ -75,5 +75,5 @@ class Reviews(models.Model):
     reviewer = models.ForeignKey(Profiles, on_delete=models.CASCADE, related_name="reviewer")
     rating = models.PositiveSmallIntegerField()
     description = models.TextField()
-    created_at = models.DateField(auto_now=False, auto_now_add=True)
-    updated_at = models.DateField(auto_now=True, auto_now_add=False)
+    created_at = models.DateTimeField(auto_now=False, auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, auto_now_add=False)

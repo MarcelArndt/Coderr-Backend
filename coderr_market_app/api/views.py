@@ -126,7 +126,9 @@ class ProfilesListView(APIView):
             return Response({'error': 'Nutzer nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
         
     permission_classes = [IsOwnerOrAdmin]
+
     def patch(self, request, *args, **kwargs):
+        self.check_permissions(request)
         pk = kwargs.get('pk')
         user = Profiles.objects.filter(pk=pk).first()
         if not user:
@@ -171,7 +173,9 @@ class ReviewsListView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+    permission_classes = [IsOwnerOrAdmin]
     def patch(self, request, *args, **kwargs):
+        self.check_permissions(request)
         pk = kwargs.get('pk')
         queryset = get_object_or_404(Reviews, pk=pk)
         serializer = ReviewsSerializer(queryset, data= request.data, partial=True)
@@ -181,6 +185,7 @@ class ReviewsListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
+        self.check_permissions(request)
         pk = kwargs.get('pk')
         queryset = get_object_or_404(Reviews, pk=pk)
         queryset.delete()
@@ -219,6 +224,7 @@ class OrdersListView(APIView):
     
     permission_classes = [AllowAny]
     def patch(self, request, *args, **kwargs):
+        self.check_permissions(request)
         pk = kwargs.get('pk')
         queryset = get_object_or_404(Orders, pk=pk)
         serializer = OrdersSerializer(queryset, data=request.data, partial=True, context={"request": request})
@@ -228,6 +234,7 @@ class OrdersListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, *args, **kwargs):
+        self.check_permissions(request)
         pk = kwargs.get('pk')
         queryset = get_object_or_404(Orders, pk=pk)
         queryset.delete()

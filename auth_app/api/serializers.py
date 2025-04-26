@@ -24,13 +24,13 @@ class RegestrationSerializer(serializers.ModelSerializer):
         username = data.get("username")
 
         if User.objects.filter(username = username).exists():
-            raise serializers.ValidationError("Username already exists.")
+            raise serializers.ValidationError({'username':"Username already exists."})
         if not repeatingPassword == password:
-            raise serializers.ValidationError("passwords doesn't match")
+            raise serializers.ValidationError({'password':"passwords doesn't match"})
         if not email:
-            raise serializers.ValidationError("Email is required.")
+            raise serializers.ValidationError({'email':"Email is required."})
         if User.objects.filter(email = email).exists():
-            raise serializers.ValidationError("Email already exists.") 
+            raise serializers.ValidationError({'email':"Email already exists."}) 
         
         return data
 
@@ -52,14 +52,14 @@ class LoginSerializer(serializers.Serializer):
             password = data.get("password")
             user = User.objects.filter(username=username).first()
             if not user:
-                raise serializers.ValidationError("wrong username")
+                raise serializers.ValidationError({'username':"wrong username"})
 
             if not user.check_password(password):
-                 raise serializers.ValidationError("wrong password")
+                 raise serializers.ValidationError({'password':"wrong password"})
             try:
                 user_profile = user.inner_user
             except:
-                raise serializers.ValidationError("No User found")
+                raise serializers.ValidationError({'user':"No User found"})
 
             return {"user_profile" : user_profile}
 
