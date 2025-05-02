@@ -29,7 +29,7 @@ class Profiles(models.Model):
     updated_at =  models.DateTimeField(auto_now=True, auto_now_add=False)
     
     def __str__(self):
-        return f"{self.user.username} | {self.type.title()}"
+        return f"{self.user.username}"
     
 
 ### Offers ### _______________________________________________________________________

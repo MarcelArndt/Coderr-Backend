@@ -73,7 +73,7 @@ class CreateOffersSerializer(serializers.ModelSerializer):
         details_list = validated_data.pop('details', [])
 
         if not request or not request.user.is_authenticated:
-            raise serializers.ValidationError({"User": "You must be logged in to create an offer."})
+            raise serializers.ValidationError({"user": "You must be logged in to create an offer."})
         
         profile = Profiles.objects.get(user=request.user)
         validated_data['user'] = profile
@@ -141,8 +141,8 @@ class ProfilesTypeSerializer(serializers.ModelSerializer):
 class OrdersSerializer(serializers.ModelSerializer):
     offersDetails = OffersDetailSerializer(read_only=True)
     offer_detail_id = serializers.IntegerField(write_only=True)
-    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
-    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
+    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
 
     class Meta():
         model = Orders
@@ -186,8 +186,8 @@ class OrdersSerializer(serializers.ModelSerializer):
 
 class ReviewsSerializer(serializers.ModelSerializer):
 
-    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
-    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ")
+    created_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
+    updated_at = serializers.DateTimeField(format="%Y-%m-%dT%H:%M:%SZ", read_only=True)
 
     class Meta():
         model = Reviews

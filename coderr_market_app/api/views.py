@@ -3,8 +3,8 @@ from coderr_market_app.models import Profiles, Offers, OffersDetails, Reviews, O
 from rest_framework import generics, status
 from rest_framework.views import APIView 
 from rest_framework.response import Response
-from rest_framework.permissions import IsAdminUser, AllowAny
-from .premissions import IsOwnerOrAdmin
+from rest_framework.permissions import IsAdminUser, AllowAny, IsAuthenticated
+from .premissions import IsOwnerOrAdmin, IsBusiness, IsCustomer
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
@@ -16,33 +16,38 @@ from rest_framework.pagination import PageNumberPagination
 ### Offers ### _________________________________________________________________________
 
 class OffersDetailsViewSet(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
+        self.check_permissions(request)
         if pk:
-            try:
-                detail = OffersDetails.objects.get(pk=pk)
-                serializer = OffersDetailSerializer(detail)
-                return Response(serializer.data)
-            except Offers.DoesNotExist:
-                return Response({"Error": "Details not found"}, status=status.HTTP_404_NOT_FOUND)
+            detail = get_object_or_404(OffersDetails, pk=pk)
+            serializer = OffersDetailSerializer(detail)
+            return Response(serializer.data)
         details = OffersDetails.objects.all()
         serializer = OffersDetailSerializer(details, many=True)
         return Response(serializer.data)
 
 
 class OfferView(APIView):
-    permission_classes = [AllowAny]
     filterset_class = OfferFilter
     search_fields = ['title', 'description']
     paginator = OffersDetailsPaginationFilter()
+
+    def get_permissions(self):
+        if self.request.method == 'GET' or self.request.method == 'POST':
+            return [IsAuthenticated()]
+        if self.request.method == 'POST':
+            return [IsBusiness()]
+        elif self.request.method == 'PATCH' or self.request.method == 'DELETE':
+            return [IsOwnerOrAdmin()]
+        return super().get_permissions()
 
     def filter_queryset(self, queryset):
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
         if filterset.is_valid():
             queryset = filterset.qs
-
         search_query = self.request.GET.get('search')
         if search_query:
             queryset = queryset.filter(
@@ -52,48 +57,45 @@ class OfferView(APIView):
         return  queryset
 
     def post(self, request, *args, **kwargs):
-            serializer = CreateOffersSerializer(data=request.data, context={"request": request})
-            if serializer.is_valid():
-                serializer.save()
-            else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+        self.check_permissions(request)   
+        serializer = CreateOffersSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     
     def patch(self, request, *args, **kwargs):
-        pk = kwargs.get("pk")
+        pk = kwargs.get('pk')
         queryset = get_object_or_404(Offers, pk=pk)
+        self.check_object_permissions(request, queryset)
         serializer = OffersSerializer(queryset, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    permission_classes = [AllowAny]
     def get(self, request, *args, **kwargs):
-        pk = kwargs.get("pk")
+        pk = kwargs.get('pk')
+        self.check_permissions(request)
         if pk:
-            try:
-                offer = Offers.objects.get(pk=pk)
-                serializer = OffersSerializer(offer)
-                return Response(serializer.data)
-            except Offers.DoesNotExist:
-                return Response({"Error": "Offer not found"}, status=status.HTTP_404_NOT_FOUND)
+            offer = get_object_or_404(Offers, pk=pk)
+            serializer = OffersSerializer(offer)
+            return Response(serializer.data)
         offers = self.filter_queryset(Offers.objects.all())
-
         result_page = self.paginator.paginate_queryset(offers, request)
         serializer = OffersSerializer(result_page, many=True)
         data = {
             'count': offers.count(),
             'results' : serializer.data
         }
-        return Response(data)
+        return self.paginator.get_paginated_response(serializer.data)
     
-    permission_classes = [IsOwnerOrAdmin]
     def delete(self, request, *args, **kwargs):
-        pk = kwargs.get("pk")
-        queryset = get_object_or_404(Offers, pk=pk)
-        queryset.delete()
+        pk = kwargs.get('pk')
+        offer = get_object_or_404(Offers, pk=pk)
+        self.check_object_permissions(request, offer)
+        offer.delete()
         return Response({"message": "Offer erfolgreich gelöscht"}, status=status.HTTP_204_NO_CONTENT)
     
 ### Profiles ### _______________________________________________________________________
@@ -112,27 +114,31 @@ class ProfilesFilteredListView(APIView):
         
 
 class ProfilesListView(APIView):
-    permission_classes = [AllowAny]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [AllowAny()]
+        elif self.request.method == 'PATCH':
+            return [IsOwnerOrAdmin()]
+        return super().get_permissions()
+
+    
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
-        user = Profiles.objects.filter(pk=pk).first()
+        user = get_object_or_404(Profiles, pk = pk)
+        self.check_object_permissions(request, user)
         if user:
             serializer = ProfilesSerializer(user)
             data = serializer.data 
             data["user"] = data.pop("id")
             data["created_at"] = data.pop("date_joined")
             return Response(data, status=status.HTTP_200_OK)
-        else:
-            return Response({'error': 'Nutzer nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
-        
-    permission_classes = [IsOwnerOrAdmin]
 
+        
     def patch(self, request, *args, **kwargs):
-        self.check_permissions(request)
         pk = kwargs.get('pk')
-        user = Profiles.objects.filter(pk=pk).first()
-        if not user:
-            return Response({'error': 'Nutzer nicht gefunden'}, status=status.HTTP_404_NOT_FOUND)
+        user = get_object_or_404(Profiles, pk = pk)
+        self.check_object_permissions(request, user)
         serializer = ProfilesSerializer(user, data = request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -146,9 +152,14 @@ class ProfilesListView(APIView):
 
 ### Reviews ### _______________________________________________________________________
 class ReviewsListView(APIView):
-
-    permission_classes = [AllowAny]
     filterset_class = ReviewFilter
+
+    def get_permissions(self):
+        if self.request.method == 'GET' or self.request.method == 'POST':
+            return [IsAuthenticated()]
+        elif self.request.method == 'PATCH' or self.request.method == 'DELETE':
+            return [IsOwnerOrAdmin()]
+        return super().get_permissions()
 
     def filter_queryset(self, queryset):
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
@@ -158,6 +169,7 @@ class ReviewsListView(APIView):
 
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
+        self.check_permissions(request)   
         if pk:
             queryset = Reviews.objects.get(pk=pk)
             serializer = ReviewsSerializer(queryset)
@@ -167,16 +179,19 @@ class ReviewsListView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     def post(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        self.check_permissions(request)   
         serializer = ReviewsSerializer(data=request.data, context={"request": request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    permission_classes = [IsOwnerOrAdmin]
+
     def patch(self, request, *args, **kwargs):
-        self.check_permissions(request)
         pk = kwargs.get('pk')
+        user = get_object_or_404(Profiles, pk = pk)
+        self.check_object_permissions(request, user)
         queryset = get_object_or_404(Reviews, pk=pk)
         serializer = ReviewsSerializer(queryset, data= request.data, partial=True)
         if serializer.is_valid():
@@ -185,8 +200,9 @@ class ReviewsListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, *args, **kwargs):
-        self.check_permissions(request)
         pk = kwargs.get('pk')
+        user = get_object_or_404(Profiles, pk = pk)
+        self.check_object_permissions(request, user)
         queryset = get_object_or_404(Reviews, pk=pk)
         queryset.delete()
         return Response({"message": "Review erfolgreich gelöscht"}, status=status.HTTP_204_NO_CONTENT)
@@ -195,37 +211,36 @@ class ReviewsListView(APIView):
 ### Orders ### _______________________________________________________________________
 class OrdersListView(APIView):
 
-    permission_classes = [IsOwnerOrAdmin]
+    def get_permissions(self):
+        if self.request.method == 'GET' or self.request.method == 'POST':
+            return [IsAuthenticated()]
+        elif self.request.method == 'PATCH' or self.request.method == 'DELETE':
+            return [IsOwnerOrAdmin()]
+        return super().get_permissions()
+
     def get(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
+        self.check_object_permissions(request, request.user)
+        profil = get_object_or_404(Profiles, user=request.user)
         if pk:
             queryset = get_object_or_404(Orders, pk=pk)
             serializer = OrdersSerializer(queryset)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        print(request.user.is_authenticated)
-        if request.user.is_authenticated:
-            profil = Profiles.objects.get(user=request.user)
-            queryset = Orders.objects.filter(
-                Q(offersDetails__offer__user=profil) | Q(user=profil)
-            )
-        else:
-            return Response({"error": "No User found! You have to sign-in before."}, status=status.HTTP_401_UNAUTHORIZED)
+        queryset = Orders.objects.filter(Q(offersDetails__offer__user=profil) | Q(user=profil))
         serializer = OrdersSerializer(queryset, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
-    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         serializer = OrdersSerializer(data=request.data, context={"request": request})
+        self.check_object_permissions(request, serializer.data)
         if serializer.is_valid():
             serializer.save()
-            print(serializer.data)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    permission_classes = [AllowAny]
+
     def patch(self, request, *args, **kwargs):
-        self.check_permissions(request)
         pk = kwargs.get('pk')
+        self.check_object_permissions(request, request.user)
         queryset = get_object_or_404(Orders, pk=pk)
         serializer = OrdersSerializer(queryset, data=request.data, partial=True, context={"request": request})
         if serializer.is_valid():
@@ -234,9 +249,9 @@ class OrdersListView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
     def delete(self, request, *args, **kwargs):
-        self.check_permissions(request)
         pk = kwargs.get('pk')
         queryset = get_object_or_404(Orders, pk=pk)
+        self.check_object_permissions(request, queryset)
         queryset.delete()
         return Response({"message": "Order erfolgreich gelöscht"}, status=status.HTTP_204_NO_CONTENT)
 
