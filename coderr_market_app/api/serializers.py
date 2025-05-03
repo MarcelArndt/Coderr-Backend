@@ -2,6 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from coderr_market_app.models import Profiles, Offers, OffersDetails, Orders, Reviews
 from django.db.models import Avg
+from rest_framework.exceptions import NotAuthenticated
 
 
 
@@ -67,24 +68,18 @@ class CreateOffersSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data): 
         request = self.context.get('request')
-
         if "details" not in validated_data:
             raise serializers.ValidationError({"details": "details are empty and required."})
         details_list = validated_data.pop('details', [])
-
         if not request or not request.user.is_authenticated:
-            raise serializers.ValidationError({"user": "You must be logged in to create an offer."})
-        
+            raise NotAuthenticated("You must be logged in to create an offer.")
         profile = Profiles.objects.get(user=request.user)
         validated_data['user'] = profile
         validated_data['min_price'], validated_data['min_delivery_time'] = self.manipulate_validated_data(details_list)
-
         new_offer = Offers.objects.create(**validated_data) 
- 
         for each_detail in details_list:
             each_detail["offer"] = new_offer
             OffersDetails.objects.create(**each_detail)
-
         return new_offer
     
     def to_representation(self, instance):
